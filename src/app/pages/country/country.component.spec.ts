@@ -5,29 +5,45 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 
 import { CountryComponent } from "./country.component";
-import { DataService } from '../../services/data/data.service';
+import { StatisticsService } from '../../services/statistics/statistics.service';
+import { ErrorService } from '../../services/error/error.service';
 import { Country } from '../../models/country.model';
+import { LineChartComponent } from '../../components/charts/line-chart/line-chart.component';
 
-describe('DetailComponent', () => {
+describe('CountryComponent', () => {
   let component: CountryComponent;
   let fixture: ComponentFixture<CountryComponent>;
 
-  let dataServiceSpy: jasmine.SpyObj<DataService>;
-  const mockCountries: Country[] = [
-    { id: 1, country: 'France', participations: [{ id: 1, year: 2000, city: 'Paris', medalsCount: 1, athleteCount: 2 }] },
-    { id: 2, country: 'Spain', participations: [{ id: 2, year: 2000, city: 'Madrid', medalsCount: 0, athleteCount: 1 }] }
-  ];
+  let statisticsServiceSpy: jasmine.SpyObj<StatisticsService>;
+  let errorServiceSpy: jasmine.SpyObj<ErrorService>;
+  
+  const mockCountry: Country = {
+    id: 1,
+    country: 'France',
+    participations: [
+      { id: 1, year: 2000, city: 'Paris', medalsCount: 1, athleteCount: 2 }
+    ]
+  };
 
   beforeEach(async () => {
-    dataServiceSpy = jasmine.createSpyObj('DataService', ['getCountries']);
-    dataServiceSpy.getCountries.and.returnValue(of(mockCountries));
+    statisticsServiceSpy = jasmine.createSpyObj('StatisticsService', ['getCountryStatistics']);
+    errorServiceSpy = jasmine.createSpyObj('ErrorService', ['handleError']);
+    
+    statisticsServiceSpy.getCountryStatistics.and.returnValue(of({
+      country: mockCountry,
+      years: [2000],
+      medalsByYear: [1],
+      totalMedals: 1,
+      totalAthletes: 2
+    }));
 
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule],
-      declarations: [ CountryComponent ],
+      declarations: [ CountryComponent, LineChartComponent ],
       providers: [
-        { provide: ActivatedRoute, useValue: { paramMap: of({ get: () => 'France' }) } },
-        { provide: DataService, useValue: dataServiceSpy }
+        { provide: ActivatedRoute, useValue: { paramMap: of({ get: (key: string) => key === 'countryName' ? 'France' : null }) } },
+        { provide: StatisticsService, useValue: statisticsServiceSpy },
+        { provide: ErrorService, useValue: errorServiceSpy }
       ]
     })
     .compileComponents();
@@ -41,9 +57,13 @@ describe('DetailComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load the correct country and compute totals', () => {
-    expect(component.titlePage).toBe('France');
-    expect(component.totalMedals).toBe(1);
-    expect(component.lineChart).toBeDefined();
+  it('should load the correct country stats', (done) => {
+    setTimeout(() => {
+      expect(component.countryStats).toBeDefined();
+      expect(component.countryStats?.country.country).toBe('France');
+      expect(component.countryStats?.totalMedals).toBe(1);
+      done();
+    }, 100);
   });
 });
+

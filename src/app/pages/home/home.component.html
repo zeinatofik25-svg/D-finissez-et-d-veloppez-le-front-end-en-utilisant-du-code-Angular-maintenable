@@ -1,6 +1,7 @@
 <h2>Olympic games app</h2>
 <hr/>
-<div>
+<div *ngIf="error" class="error">{{ error }}</div>
+<div *ngIf="stats">
   <div>
     <div class="center">
       <div>{{ titlePage }}</div>
@@ -8,13 +9,18 @@
     <div class="split">
       <div>
         <p>Number of countries</p>
-        <p>{{ totalCountries }}</p>
+        <p>{{ stats.totalCountries }}</p>
       </div>
       <div>
         <p>Number of JOs</p>
-        <p>{{ totalJOs }}</p>
+        <p>{{ stats.totalJOs }}</p>
       </div>
     </div>
   </div>
-  <canvas id="DashboardPieChart">{{ pieChart }}</canvas>
+  <app-pie-chart
+    elementId="DashboardPieChart"
+    [labels]="stats.countryLabels"
+    [data]="stats.medalsByCountry"
+    [enableNavigation]="true"
+  ></app-pie-chart>
 </div>

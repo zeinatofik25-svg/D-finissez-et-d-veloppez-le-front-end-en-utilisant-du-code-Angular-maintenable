@@ -1,26 +1,31 @@
-<div>
+<div *ngIf="error" class="error">{{ error }}</div>
+<div *ngIf="countryStats">
   <div>
     <div class="center">
-      <div>{{ titlePage }}</div>
+      <div>{{ countryStats.country.country }}</div>
     </div>
     <div class="split">
       <div>
         <p>Number of entries</p>
-        <p>{{ totalEntries }}</p>
+        <p>{{ countryStats.years.length }}</p>
       </div>
       <div>
         <p>Total Number of medals</p>
-        <p>{{ totalMedals }}</p>
+        <p>{{ countryStats.totalMedals }}</p>
       </div>
       <div>
         <p>Total Number of athletes</p>
-        <p>{{ totalAthletes }}</p>
+        <p>{{ countryStats.totalAthletes }}</p>
       </div>
     </div>
   </div>
   <div class="chart-container wrapper-container">
     <div class="container">
-      <canvas id="countryChart">{{ lineChart }}</canvas>
+      <app-line-chart
+        elementId="countryChart"
+        [labels]="countryStats.years"
+        [data]="countryStats.medalsByYear"
+      ></app-line-chart>
       <h2>Date</h2>
     </div>
   </div>
