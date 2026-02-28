@@ -1,67 +1,72 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import Chart from 'chart.js/auto';
-import { OlympicService } from '../../services/olympic/olympic.service';
+import { DataService } from '../../services/data/data.service';
 import { Country } from '../../models/country.model';
+import { ChartService } from '../../services/chart/chart.service';
+import { ErrorService } from '../../services/error/error.service';
+import { Subject, takeUntil } from 'rxjs';
+import type { Chart } from 'chart.js/auto';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit {
-  public pieChart!: Chart;
-  public totalCountries = 0;
-  public totalJOs = 0;
-  public error = '';
-  titlePage = 'Medals per Country';
+export class HomeComponent implements OnInit, OnDestroy {
+  public pieChart?: Chart;
+  public totalCountries: number = 0;
+  public totalJOs: number = 0;
+  public error?: string;
+  titlePage: string = 'Medals per Country';
+  private destroy$ = new Subject<void>();
 
-  constructor(private router: Router, private olympicService: OlympicService) {}
+  constructor(
+    private router: Router,
+    private dataService: DataService,
+    private chartService: ChartService,
+    private errorService: ErrorService
+  ) {}
 
   ngOnInit() {
-    this.olympicService.getCountries().subscribe(
-      (data: Country[]) => {
-        if (data && data.length > 0) {
-          this.totalJOs = Array.from(new Set(data.flatMap((c) => c.participations.map((p) => p.year)))).length;
-          const countries: string[] = data.map((c) => c.country);
-          this.totalCountries = countries.length;
-          const sumOfAllMedalsYears = data.map((c) => c.participations.reduce((acc, p) => acc + p.medalsCount, 0));
-          this.buildPieChart(countries, sumOfAllMedalsYears);
+    this.dataService
+      .getCountries()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (data: Country[]) => {
+          if (data && data.length > 0) {
+            this.totalJOs = Array.from(
+              new Set(data.flatMap((c) => c.participations.map((p) => p.year)))
+            ).length;
+            const countries: string[] = data.map((c) => c.country);
+            this.totalCountries = countries.length;
+            const sumOfAllMedalsYears: number[] = data.map((c) =>
+              c.participations.reduce((acc, p) => acc + p.medalsCount, 0)
+            );
+            this.pieChart = this.chartService.createChart(
+              'DashboardPieChart',
+              'pie',
+              countries,
+              sumOfAllMedalsYears,
+              undefined,
+              {
+                onDatasetClick: (index) => {
+                  const selectedCountry = countries[index];
+                  this.router.navigate(['country', selectedCountry]);
+                },
+                hoverOffset: 4,
+              }
+            );
+          }
+        },
+        (err) => {
+          this.error = this.errorService.handleError(err);
         }
-      },
-      (error) => {
-        this.error = error?.message ?? 'Erreur inconnue';
-      }
-    );
+      );
   }
 
-  buildPieChart(countries: string[], sumOfAllMedalsYears: number[]) {
-    const pieChart = new Chart("DashboardPieChart", {
-      type: 'pie',
-      data: {
-        labels: countries,
-        datasets: [{
-          label: 'Medals',
-          data: sumOfAllMedalsYears,
-          backgroundColor: ['#0b868f', '#adc3de', '#7a3c53', '#8f6263', 'orange', '#94819d'],
-          hoverOffset: 4
-        }],
-      },
-      options: {
-        aspectRatio: 2.5,
-        onClick: (e) => {
-          if (e.native) {
-            const points = pieChart.getElementsAtEventForMode(e.native, 'point', { intersect: true }, true)
-            if (points.length) {
-              const firstPoint = points[0];
-              const countryName = pieChart.data.labels ? pieChart.data.labels[firstPoint.index] : '';
-              this.router.navigate(['country', countryName]);
-            }
-          }
-        }
-      }
-    });
-    this.pieChart = pieChart;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
 

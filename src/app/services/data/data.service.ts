@@ -7,13 +7,13 @@ import { Country } from '../../models/country.model';
 @Injectable({
   providedIn: 'root'
 })
-export class OlympicService {
-  private readonly olympicUrl = './assets/mock/olympic.json';
+export class DataService {
+  private readonly dataUrl = './assets/mock/olympic.json';
 
   constructor(private http: HttpClient) {}
 
   getCountries(): Observable<Country[]> {
-    return this.http.get<Country[]>(this.olympicUrl).pipe(
+    return this.http.get<Country[]>(this.dataUrl).pipe(
       map((data) => data ?? [])
     );
   }

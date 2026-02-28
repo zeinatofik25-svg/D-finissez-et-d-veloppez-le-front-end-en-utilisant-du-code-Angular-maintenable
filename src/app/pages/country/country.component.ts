@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import Chart from 'chart.js/auto';
-import { OlympicService } from '../../services/olympic/olympic.service';
+import { DataService } from '../../services/data/data.service';
 import { Country } from '../../models/country.model';
+import { ChartService } from '../../services/chart/chart.service';
+import { ErrorService } from '../../services/error/error.service';
+import { Subject, takeUntil } from 'rxjs';
 
 
 @Component({
@@ -10,67 +13,63 @@ import { Country } from '../../models/country.model';
   templateUrl: './country.component.html',
   styleUrls: ['./country.component.scss']
 })
-export class CountryComponent implements OnInit {
+export class CountryComponent implements OnInit, OnDestroy {
   public lineChart!: Chart;
-  public titlePage = '';
-  public totalEntries = 0;
-  public totalMedals = 0;
-  public totalAthletes = 0;
-  public error = '';
+  public titlePage: string = '';
+  public totalEntries: number = 0;
+  public totalMedals: number = 0;
+  public totalAthletes: number = 0;
+  public error?: string;
+  private destroy$ = new Subject<void>();
 
-  constructor(private route: ActivatedRoute, private router: Router, private olympicService: OlympicService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private dataService: DataService,
+    private chartService: ChartService,
+    private errorService: ErrorService
+  ) {}
 
   ngOnInit() {
-    this.route.paramMap.subscribe((param: ParamMap) => {
-      const countryName = param.get('countryName');
+    let countryName: string | null = null
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((param: ParamMap) => {
+      countryName = param.get('countryName');
       if (!countryName) {
         this.router.navigate(['not-found']);
         return;
       }
 
-      this.olympicService.getCountries().subscribe(
-        (data: Country[]) => {
-          if (data && data.length > 0) {
-            const selectedCountry = data.find((c) => c.country === countryName);
-            if (!selectedCountry) {
-              this.router.navigate(['not-found']);
-              return;
+      this.dataService
+        .getCountries()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(
+          (data: Country[]) => {
+            if (data && data.length > 0) {
+              const selectedCountry = data.find((c) => c.country === countryName);
+              if (!selectedCountry) {
+                this.router.navigate(['not-found']);
+                return;
+              }
+              this.titlePage = selectedCountry.country;
+              const participations = selectedCountry?.participations.map((i: any) => i) ?? [];
+              this.totalEntries = participations?.length ?? 0;
+              const years: number[] = participations.map((p) => p.year) ?? [];
+              const medals: number[] = participations.map((p) => p.medalsCount) ?? [];
+              this.totalMedals = medals.reduce((acc: number, m: number) => acc + m, 0);
+              const nbAthletes: number[] = participations.map((p) => p.athleteCount);
+              this.totalAthletes = nbAthletes.reduce((acc: number, a: number) => acc + a, 0);
+              this.lineChart = this.chartService.createChart('countryChart', 'line', years, medals);
             }
-            this.titlePage = selectedCountry.country;
-            const participations = selectedCountry.participations ?? [];
-            this.totalEntries = participations.length;
-            const years = participations.map((p) => p.year);
-            const medals = participations.map((p) => p.medalsCount);
-            this.totalMedals = medals.reduce((acc, m) => acc + m, 0);
-            const nbAthletes = participations.map((p) => p.athleteCount);
-            this.totalAthletes = nbAthletes.reduce((acc, a) => acc + a, 0);
-            this.buildChart(years, medals);
+          },
+          (err) => {
+            this.error = this.errorService.handleError(err);
           }
-        },
-        (error) => {
-          this.error = error?.message ?? 'Erreur inconnue';
-        }
-      );
+        );
     });
   }
 
-  buildChart(years: number[], medals: number[]) {
-    const lineChart = new Chart("countryChart", {
-      type: 'line',
-      data: {
-        labels: years,
-        datasets: [
-          {
-            label: "medals",
-            data: medals,
-            backgroundColor: '#0b868f'
-          },
-        ]
-      },
-      options: {
-        aspectRatio: 2.5
-      }
-    });
-    this.lineChart = lineChart;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
