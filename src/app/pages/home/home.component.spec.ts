@@ -1,14 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Component, Input } from '@angular/core';
 import { of } from 'rxjs';
 
 import { HomeComponent } from './home.component';
-import { StatisticsService } from '../../services/statistics/statistics.service';
+import { OlympicStatistics, StatisticsService } from '../../services/statistics/statistics.service';
 import { ErrorService } from '../../services/error/error.service';
-import { OlympicStatistics } from '../../services/statistics/statistics.service';
-import { PieChartComponent } from '../../components/charts/pie-chart/pie-chart.component';
 import { Country } from '../../models/country.model';
+
+@Component({
+  selector: 'app-pie-chart',
+  template: '',
+})
+class PieChartStubComponent {
+  @Input() elementId = '';
+  @Input() labels: string[] = [];
+  @Input() data: number[] = [];
+  @Input() enableNavigation = false;
+}
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -36,8 +44,7 @@ describe('HomeComponent', () => {
     errorServiceSpy = jasmine.createSpyObj('ErrorService', ['handleError']);
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],
-      declarations: [ HomeComponent, PieChartComponent ],
+      declarations: [HomeComponent, PieChartStubComponent],
       providers: [
         { provide: StatisticsService, useValue: statisticsServiceSpy },
         { provide: ErrorService, useValue: errorServiceSpy }

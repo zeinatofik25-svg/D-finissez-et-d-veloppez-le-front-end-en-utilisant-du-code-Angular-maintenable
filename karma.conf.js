@@ -1,7 +1,7 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
-module.exports = function (config) {
+module.exports = function karmaConfig(config) {
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
@@ -25,7 +25,7 @@ module.exports = function (config) {
       suppressAll: true // removes the duplicated traces
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/olympic-games-starter'),
+      dir: require('node:path').join(__dirname, './coverage/olympic-games-starter'),
       subdir: '.',
       reporters: [
         { type: 'html' },
@@ -36,6 +36,20 @@ module.exports = function (config) {
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
+
+    // Headless stability (useful for CI / automated runs)
+    browserDisconnectTolerance: 2,
+    browserDisconnectTimeout: 10000,
+    browserNoActivityTimeout: 60000,
+    captureTimeout: 120000,
+
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+      },
+    },
+
     autoWatch: true,
     browsers: ['Chrome'],
     singleRun: false,

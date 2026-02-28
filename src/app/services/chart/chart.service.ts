@@ -43,21 +43,24 @@ export class ChartService {
     const chart = new Chart(elementId, cfg) as ChartType;
 
     // Attach click handler after chart creation 
-    if (advancedOptions?.onDatasetClick) {
-      const canvasElement = document.getElementById(elementId) as HTMLCanvasElement | null;
-      if (canvasElement) {
-        canvasElement.addEventListener('click', (event: Event) => {
+    const canvasElement = document.getElementById(elementId) as HTMLCanvasElement | null;
+    if (canvasElement) {
+      canvasElement.onclick = null;
+
+      if (advancedOptions?.onDatasetClick) {
+        canvasElement.onclick = (event: MouseEvent) => {
           const elements = chart.getElementsAtEventForMode(
             event,
             'nearest',
             { intersect: true },
             true
           );
+
           if (elements && elements.length > 0) {
             const index = elements[0].index;
             advancedOptions.onDatasetClick?.(index, labels, chart);
           }
-        });
+        };
       }
     }
 

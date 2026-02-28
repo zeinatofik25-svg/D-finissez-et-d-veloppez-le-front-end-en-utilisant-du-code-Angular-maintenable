@@ -1,14 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
+import { Component, Input } from '@angular/core';
 import { of } from 'rxjs';
 
 import { CountryComponent } from "./country.component";
 import { StatisticsService } from '../../services/statistics/statistics.service';
 import { ErrorService } from '../../services/error/error.service';
 import { Country } from '../../models/country.model';
-import { LineChartComponent } from '../../components/charts/line-chart/line-chart.component';
+
+@Component({
+  selector: 'app-line-chart',
+  template: '',
+})
+class LineChartStubComponent {
+  @Input() elementId = '';
+  @Input() labels: Array<string | number> = [];
+  @Input() data: number[] = [];
+}
 
 describe('CountryComponent', () => {
   let component: CountryComponent;
@@ -38,8 +46,7 @@ describe('CountryComponent', () => {
     }));
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],
-      declarations: [ CountryComponent, LineChartComponent ],
+      declarations: [CountryComponent, LineChartStubComponent],
       providers: [
         { provide: ActivatedRoute, useValue: { paramMap: of({ get: (key: string) => key === 'countryName' ? 'France' : null }) } },
         { provide: StatisticsService, useValue: statisticsServiceSpy },
