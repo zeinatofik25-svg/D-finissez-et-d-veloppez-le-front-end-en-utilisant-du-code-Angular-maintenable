@@ -2,21 +2,7 @@
 <hr/>
 <div *ngIf="error" class="error">{{ error }}</div>
 <div *ngIf="stats">
-  <div>
-    <div class="center">
-      <div>{{ titlePage }}</div>
-    </div>
-    <div class="split">
-      <div>
-        <p>Number of countries</p>
-        <p>{{ stats.totalCountries }}</p>
-      </div>
-      <div>
-        <p>Number of JOs</p>
-        <p>{{ stats.totalJOs }}</p>
-      </div>
-    </div>
-  </div>
+  <app-header [title]="titlePage" [indicators]="indicators"></app-header>
   <app-pie-chart
     elementId="DashboardPieChart"
     [labels]="stats.countryLabels"

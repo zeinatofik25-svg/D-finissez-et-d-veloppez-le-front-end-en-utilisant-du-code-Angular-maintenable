@@ -1,24 +1,9 @@
 <div *ngIf="error" class="error">{{ error }}</div>
 <div *ngIf="countryStats">
-  <div>
-    <div class="center">
-      <div>{{ countryStats.country.country }}</div>
-    </div>
-    <div class="split">
-      <div>
-        <p>Number of entries</p>
-        <p>{{ countryStats.years.length }}</p>
-      </div>
-      <div>
-        <p>Total Number of medals</p>
-        <p>{{ countryStats.totalMedals }}</p>
-      </div>
-      <div>
-        <p>Total Number of athletes</p>
-        <p>{{ countryStats.totalAthletes }}</p>
-      </div>
-    </div>
-  </div>
+  <app-header
+    [title]="countryStats.country.country"
+    [indicators]="indicators"
+  ></app-header>
   <div class="chart-container wrapper-container">
     <div class="container">
       <app-line-chart

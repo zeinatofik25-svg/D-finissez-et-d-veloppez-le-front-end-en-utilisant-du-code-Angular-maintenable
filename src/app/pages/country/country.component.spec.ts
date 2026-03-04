@@ -18,6 +18,15 @@ class LineChartStubComponent {
   @Input() data: number[] = [];
 }
 
+@Component({
+  selector: 'app-header',
+  template: '',
+})
+class HeaderStubComponent {
+  @Input() title = '';
+  @Input() indicators: Array<{ label: string; value: string | number }> = [];
+}
+
 describe('CountryComponent', () => {
   let component: CountryComponent;
   let fixture: ComponentFixture<CountryComponent>;
@@ -46,7 +55,7 @@ describe('CountryComponent', () => {
     }));
 
     await TestBed.configureTestingModule({
-      declarations: [CountryComponent, LineChartStubComponent],
+      declarations: [CountryComponent, LineChartStubComponent, HeaderStubComponent],
       providers: [
         { provide: ActivatedRoute, useValue: { paramMap: of({ get: (key: string) => key === 'countryName' ? 'France' : null }) } },
         { provide: StatisticsService, useValue: statisticsServiceSpy },

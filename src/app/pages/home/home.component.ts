@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { StatisticsService, OlympicStatistics } from '../../services/statistics/statistics.service';
 import { ErrorService } from '../../services/error/error.service';
 import { Subject, takeUntil } from 'rxjs';
+import type { HeaderIndicator } from '../header/header.component';
 
 @Component({
   selector: 'app-home',
@@ -12,6 +13,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   stats?: OlympicStatistics;
   error?: string;
   titlePage = 'Medals per Country';
+  indicators: HeaderIndicator[] = [];
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -26,6 +28,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       .subscribe(
         (stats) => {
           this.stats = stats;
+          this.indicators = [
+            { label: 'Number of countries', value: stats.totalCountries },
+            { label: 'Number of JOs', value: stats.totalJOs },
+          ];
         },
         (err) => {
           this.error = this.errorService.handleError(err);

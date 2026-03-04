@@ -18,6 +18,15 @@ class PieChartStubComponent {
   @Input() enableNavigation = false;
 }
 
+@Component({
+  selector: 'app-header',
+  template: '',
+})
+class HeaderStubComponent {
+  @Input() title = '';
+  @Input() indicators: Array<{ label: string; value: string | number }> = [];
+}
+
 describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
@@ -44,7 +53,7 @@ describe('HomeComponent', () => {
     errorServiceSpy = jasmine.createSpyObj('ErrorService', ['handleError']);
 
     await TestBed.configureTestingModule({
-      declarations: [HomeComponent, PieChartStubComponent],
+      declarations: [HomeComponent, PieChartStubComponent, HeaderStubComponent],
       providers: [
         { provide: StatisticsService, useValue: statisticsServiceSpy },
         { provide: ErrorService, useValue: errorServiceSpy }

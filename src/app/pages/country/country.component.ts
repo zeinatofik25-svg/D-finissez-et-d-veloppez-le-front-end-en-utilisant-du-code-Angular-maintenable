@@ -3,6 +3,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { StatisticsService, CountryStatistics } from '../../services/statistics/statistics.service';
 import { ErrorService } from '../../services/error/error.service';
 import { Subject, takeUntil } from 'rxjs';
+import type { HeaderIndicator } from '../header/header.component';
 
 @Component({
   selector: 'app-country',
@@ -12,6 +13,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class CountryComponent implements OnInit, OnDestroy {
   countryStats?: CountryStatistics;
   error?: string;
+  indicators: HeaderIndicator[] = [];
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -35,6 +37,11 @@ export class CountryComponent implements OnInit, OnDestroy {
         .subscribe(
           (stats) => {
             this.countryStats = stats;
+            this.indicators = [
+              { label: 'Number of entries', value: stats.years.length },
+              { label: 'Total Number of medals', value: stats.totalMedals },
+              { label: 'Total Number of athletes', value: stats.totalAthletes },
+            ];
           },
           (err) => {
             this.error = this.errorService.handleError(err);
