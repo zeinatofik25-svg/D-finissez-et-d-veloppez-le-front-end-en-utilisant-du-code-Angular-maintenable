@@ -1,8 +1,10 @@
 <h2>Olympic games app</h2>
 <hr/>
 <div *ngIf="error" class="error">{{ error }}</div>
+<div *ngIf="!stats && !error" class="center">Loading...</div>
 <div *ngIf="stats">
   <app-header [title]="titlePage" [indicators]="indicators"></app-header>
+  <div *ngIf="stats.totalCountries === 0" class="center">Aucune donnée</div>
   <app-pie-chart
     elementId="DashboardPieChart"
     [labels]="stats.countryLabels"
